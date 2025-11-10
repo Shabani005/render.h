@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#define MX_IMPLEMENTATION
+#include <mathx.h>
 
 typedef struct {
   size_t   width;
@@ -85,7 +89,7 @@ void rd_canvas_to_terminal(){
 
 
 void canvas_to_term(rd_canvas *c){
-  printf("\033[H\033[J");
+  printf("\n\033[H\033[J");
   for (size_t j=0; j<c->height; j+=(int)c->height/20){ // the larger the canvas the worse the approximation is tested using 200x200
     for (size_t i=0; i<c->width; i+=(int)c->width/64){
       rd_color col = uint32_to_rd_color(c->pixels[j * c->width + i]);
@@ -111,11 +115,20 @@ void canvas_to_term(rd_canvas *c){
 int main(void){
   rd_canvas canva = {0};
   rd_init_canvas(&canva, 200, 100);
-  rd_fill_background(&canva, rd_white);
-  rd_draw_rect(&canva, 40, 20, 0, 0, rd_blue);
-  rd_draw_rect(&canva, 30, 20, 50, 50, rd_red);
-  rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
-  canvas_to_term(&canva);
-  rd_canvas_to_ppm(&canva, "image.ppm");
+
+  float dt = (float)1/30; // 60 FPS
+  Vec2 rec1 = {.x=50, .y=50};
+    
+  while (true){
+    usleep(1000 * 1000 * dt); 
+    Vec2transformP(&rec1, 10*dt, 20*dt);
+    rd_fill_background(&canva, rd_white);
+    rd_draw_rect(&canva, 40, 20, 0, 0, rd_blue);
+    rd_draw_rect(&canva, 30, 20, rec1.x, rec1.y, rd_red);
+    rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
+    canvas_to_term(&canva);
+  }
+  // canvas_to_term(&canva);
+  // rd_canvas_to_ppm(&canva, "image.ppm");
   return 0;
 }
