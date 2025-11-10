@@ -112,11 +112,13 @@ void canvas_to_term(rd_canvas *c){
 }
 
 
+#define FPS 30
+
 int main(void){
   rd_canvas canva = {0};
   rd_init_canvas(&canva, 200, 100);
 
-  float dt = (float)1/30; // 60 FPS
+  float dt = (float)1/FPS; 
   Vec2 rec1 = {.x=50, .y=50};
     
   while (true){
