@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #define MX_IMPLEMENTATION
-#include <mathx.h>
+#include "mathx.h"
 
 typedef struct {
   size_t   width;
