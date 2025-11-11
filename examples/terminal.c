@@ -1,5 +1,5 @@
 #define RD_IMPLEMENTATION
-#include "render.h"
+#include "../render.h"
 
 #define FPS 30
 
