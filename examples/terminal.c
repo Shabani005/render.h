@@ -26,6 +26,7 @@ int main(void){
     else if (key == 'a') Vec2transformP(&rec2, -40*dt, 0*dt);
     else if (key == 's') Vec2transformP(&rec2, 0*dt, -20*dt);
     else if (key == 'd') Vec2transformP(&rec2, 40*dt, 0*dt);
+    else if (key == 'q') exit(1);
   }
-   return 0;
+  return 0;
 }
