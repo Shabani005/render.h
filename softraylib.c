@@ -3,11 +3,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <raylib.h>
+#include <unistd.h>
 #define MX_IMPLEMENTATION
 #include "mathx.h"
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 200
+#define HEIGHT 100
 
 typedef struct {
   size_t   width;
@@ -27,6 +28,7 @@ static rd_color rd_red = {.r=0xFF, .g=0x00, .b=0x00, .a=0xFF};
 static rd_color rd_white = {.r=0xFF, .g=0xFF, .b=0xFF, .a=0xFF};
 static rd_color rd_green = {.r=0x00, .g=0xFF, .b=0x00, .a=0xFF};
 static rd_color rd_bue = {.r=0x00, .g=0x00, .b=0xFF, .a=0xFF};
+static rd_color rd_blue = {.r=0x00, .g=0x00, .b=0xFF, .a=0xFF};
 
 static inline uint32_t rd_color_to_uint32(rd_color col){
   return ((uint32_t)col.a << 24) | ((uint32_t)col.r << 16) |
@@ -91,24 +93,27 @@ int main(void){
 
   Image img = {.data=canva.pixels, .width=WIDTH, .height=HEIGHT, .mipmaps=1, .format=PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
   Texture2D tex = LoadTextureFromImage(img);
+  Vec2 rec1 = {.x=50, .y=50};
 
-  Vec2 rec1 = {.x=50, .y=20};
-  Vec2 rec2 = {.x=10, .y=30};
 
   while (!WindowShouldClose()){
     float dt = GetFrameTime();
+    //SetTargetFPS(60);
+    
+        
+    Vec2transformP(&rec1, 10*dt, 20*dt);
+    
+    rd_fill_background(&canva, rd_white);
+    rd_draw_rect(&canva, 40, 20, 0, 0, rd_blue);
+    rd_draw_rect(&canva, 30, 20, rec1.x, rec1.y, rd_red);
+    rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
 
-    Vec2transformP(&rec1, 20.0f*dt, -430.0f*dt); // TODO: could elimiate the need for dt (if we assume that we have a 60fps limit :mhm:)
-    Vec2transformP(&rec2, 40.0f*dt, 80.0f*dt);   
-    // SetTargetFPS(60);
-    rd_fill_background(&canva, rd_grey);
-    rd_draw_rect(&canva, 120, 130, rec1.x, rec1.y, rd_red);
-    rd_draw_rect(&canva, 140, 110, rec2.x, rec2.y, rd_green);
 
-    UpdateTexture(tex, canva.pixels);
     BeginDrawing();
-    DrawTexture(tex, 0, 0, WHITE);
+    
     DrawFPS(0, 10);
+    UpdateTexture(tex, canva.pixels);
+    DrawTexture(tex, 0, 0, WHITE);
     EndDrawing();
   }
   CloseWindow();

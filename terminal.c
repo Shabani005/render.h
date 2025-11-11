@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <termios.h>
 #define MX_IMPLEMENTATION
 #include "mathx.h"
 
@@ -86,7 +87,21 @@ void rd_canvas_to_terminal(){
   
 }
 
+bool poll_char(char c){
+  struct termios oldt, newt;
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON|ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
+  bool quit = false;
+
+  uint8_t ch = getchar();
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  //printf("pressed %c\n", ch);
+  if (ch == c) quit = true;
+  return quit;
+}
 
 void canvas_to_term(rd_canvas *c){
   printf("\n\033[H\033[J");
@@ -120,15 +135,17 @@ int main(void){
 
   float dt = (float)1/FPS; 
   Vec2 rec1 = {.x=50, .y=50};
-    
+  Vec2 rec2 = {.x=0, .y=10};
+   
   while (true){
     usleep(1000 * 1000 * dt); 
     Vec2transformP(&rec1, 10*dt, 20*dt);
     rd_fill_background(&canva, rd_white);
-    rd_draw_rect(&canva, 40, 20, 0, 0, rd_blue);
+    rd_draw_rect(&canva, 40, 20, rec2.x, rec2.y, rd_blue);
     rd_draw_rect(&canva, 30, 20, rec1.x, rec1.y, rd_red);
     rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
     canvas_to_term(&canva);
+    if (poll_char('d')) Vec2transformP(&rec2, 40*dt, 0);
   }
   // canvas_to_term(&canva);
   // rd_canvas_to_ppm(&canva, "image.ppm");
