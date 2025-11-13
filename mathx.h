@@ -1,25 +1,27 @@
 typedef unsigned long size_t;
 
+typedef struct {
+  float x;
+  float y;
+} mt_Vec2;
+// #define Vec2 mt_Vec2
+
+
 #ifdef MT_STRIP_PREFIX
 typedef struct {
   float x;
   float y;
 } Vec2;
-#else
-typedef struct {
-  float x;
-  float y;
-} mt_Vec2;
 #define Vec2 mt_Vec2
 #endif
 
-Vec2 mt_Vec2add(Vec2 a, Vec2 b);
-Vec2 mt_Vec2sub(Vec2 a, Vec2 b);
-Vec2 mt_Vec2dot(Vec2 a, Vec2 b);
-Vec2 mt_Vec2scale(Vec2 vec, float v);
-void mt_Vec2scaleP(Vec2 *vec, float v);
-void mt_Vec2transformP(Vec2 *vec, float x, float y);
-Vec2 mt_Vec2norm(Vec2 v);
+mt_Vec2 mt_Vec2add(mt_Vec2 a, mt_Vec2 b);
+mt_Vec2 mt_Vec2sub(mt_Vec2 a, mt_Vec2 b);
+mt_Vec2 mt_Vec2dot(mt_Vec2 a, mt_Vec2 b);
+mt_Vec2 mt_Vec2scale(mt_Vec2 vec, float v);
+void mt_Vec2scaleP(mt_Vec2 *vec, float v);
+void mt_Vec2transformP(mt_Vec2 *vec, float x, float y);
+mt_Vec2 mt_Vec2norm(mt_Vec2 v);
 double factorial(size_t n);
 float sqrtf(float num);
 float powf(float x, float power);
@@ -27,40 +29,40 @@ double sin(double x);
 double cos(double x);
 
 #ifdef MT_IMPLEMENTATION
-Vec2 mt_Vec2add(Vec2 a, Vec2 b){
-  Vec2 result = {0};
+mt_Vec2 mt_Vec2add(mt_Vec2 a, mt_Vec2 b){
+  mt_Vec2 result = {0};
   result.x += a.x+b.x;
   result.y += a.y+b.y;
   return result;
 }
 
-Vec2 mt_Vec2sub(Vec2 a, Vec2 b){
-  Vec2 result = {0};
+mt_Vec2 mt_Vec2sub(mt_Vec2 a, mt_Vec2 b){
+  mt_Vec2 result = {0};
   result.x -= a.x+b.x;
   result.y -= a.y+b.y;
   return result;
 }
 
-Vec2 mt_Vec2dot(Vec2 a, Vec2 b){
-  Vec2 result = {0};
+mt_Vec2 mt_Vec2dot(mt_Vec2 a, mt_Vec2 b){
+  mt_Vec2 result = {0};
   result.x += a.x*b.x;
   result.y += a.y*b.y;
   return result;
 }
 
-Vec2 mt_Vec2scale(Vec2 vec, float v){
-  Vec2 result = {0};
+mt_Vec2 mt_Vec2scale(mt_Vec2 vec, float v){
+  mt_Vec2 result = {0};
   result.x += vec.x*v;
   result.y += vec.y*v;
   return result;
 }
 
-void mt_Vec2transformP(Vec2 *vec, float x, float y){
+void mt_Vec2transformP(mt_Vec2 *vec, float x, float y){
   vec->x += x;
   vec->y -= y;
 }
 
-void mt_Vec2scaleP(Vec2 *vec, float v){
+void mt_Vec2scaleP(mt_Vec2 *vec, float v){
   vec->x += vec->x*v;
   vec->y += vec->y*v;
 }
@@ -91,8 +93,8 @@ float powf(float x, float power){
   return result;
 }
 
-Vec2 mt_Vec2norm(Vec2 v){
-  Vec2 result = {0};
+mt_Vec2 mt_Vec2norm(mt_Vec2 v){
+  mt_Vec2 result = {0};
   float len = sqrtf(v.x*v.x + v.y*v.y);
   result.x = v.x/len;
   result.y = v.y/len;
