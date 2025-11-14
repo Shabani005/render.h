@@ -6,8 +6,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/select.h>
-// #define MX_IMPLEMENTATION
-// #include "mathx.h"
 
 typedef struct {
   size_t   width;
@@ -21,6 +19,13 @@ typedef struct {
   uint8_t b;
   uint8_t a;
 } rd_color;
+
+#ifndef MT_IMPLEMENTATION
+typedef struct {
+  float x;
+  float y;
+} mt_Vec2;
+#endif
 
 static rd_color rd_grey = {.r=0x18, .g=0x18, .b=0x18, .a=0xFF};
 static rd_color rd_red = {.r=0xFF, .g=0x00, .b=0x00, .a=0xFF};
@@ -36,6 +41,11 @@ void rd_draw_rect(rd_canvas *c, size_t w, size_t h, size_t x, size_t y, rd_color
 void rd_canvas_to_ppm(rd_canvas *c, const char *filename);
 uint8_t rd_poll_key_terminal();
 void rd_canvas_to_terminal(rd_canvas *c);
+void rd_draw_pixel(rd_canvas *c, size_t x, size_t y, rd_color color);
+void rd_draw_triangle(rd_canvas *c, mt_Vec2 v1, mt_Vec2 v2, mt_Vec2 v3, rd_color col);
+float rd_solve_y(mt_Vec2 a, mt_Vec2 b, float x);
+int rd_ceil(float x);
+int rd_floor(float x);
 
 #ifdef RD_IMPLEMENTATION
 static inline uint32_t rd_color_to_uint32(rd_color col){
@@ -137,5 +147,57 @@ void rd_canvas_to_terminal(rd_canvas *c){
   }
   printf("\n");
   fflush(stdout);
+}
+
+void rd_draw_pixel(rd_canvas *c, size_t x, size_t y, rd_color color){
+  if (x >= c->width || y >= c->height){
+    return;
+  }
+  c->pixels[y * c->width+x] = rd_color_to_uint32(color);
+}
+
+
+float rd_solve_y(mt_Vec2 a, mt_Vec2 b, float x){
+  float slope = (b.y - a.y) / (b.x - a.x);
+  return a.y + slope * (x - a.x); 
+}
+
+int rd_ceil(float x) {
+  int cut = (int)x;
+  if (x > (float)cut)
+    return cut + 1;
+  else return cut;
+}
+
+
+int rd_floor(float x) {
+  int cut = (int)x;
+  if (x < (float)cut) return cut - 1;
+  else return cut;
+}
+
+void rd_draw_triangle(rd_canvas *c, mt_Vec2 v1, mt_Vec2 v2, mt_Vec2 v3, rd_color col){
+
+  int xmin = rd_ceil(v1.x);
+  int xmax = rd_floor(v3.x);
+
+  mt_Vec2 mr = {.x = (v1.x + v3.x) * 0.5f}; 
+
+  for (int x = xmin; x<=xmax; ++x){
+    float hr;
+
+    if (x<=mr.x){
+      hr = rd_solve_y(v1, v2, (float)x);
+    } else {
+      hr = rd_solve_y(v3, v2, (float)x);
+    }
+
+    float ymin = v1.y;
+    float ymax = hr;
+
+    for (int y=rd_ceil(ymin); y<=rd_floor(ymax); ++y){
+      rd_draw_pixel(c, x, y, col);
+    }
+  }
 }
 #endif // RD_IMPLEMENTATION
