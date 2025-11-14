@@ -20,11 +20,15 @@ int main(void){
 
   Image img = {.data=canva.pixels, .width=WIDTH, .height=HEIGHT, .mipmaps=1, .format=PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
   Texture2D tex = LoadTextureFromImage(img);
+
   mt_Vec2 rec1 = {.x=200, .y=200};
 
   mt_Vec2 t1 = {.x=200, .y=50};
   mt_Vec2 t2 = {.x=400, .y=200};
   mt_Vec2 t3 = {.x=600, .y=50};
+
+  mt_Vec2 l1 = {.x=0, .y=200};
+  mt_Vec2 l2 = {.x=700, .y=300};
 
   while (!WindowShouldClose()){
     float dt = GetFrameTime();
@@ -37,6 +41,7 @@ int main(void){
     rd_draw_rect(&canva, 120, 80, rec1.x, rec1.y, rd_red);
     rd_draw_rect(&canva, 40, 80, 160, 240, rd_green);
     rd_draw_triangle(&canva, t1, t2, t3, rd_red);
+    rd_draw_circle(&canva, 300, 300, 50, rd_grey); 
 
     BeginDrawing();
     {

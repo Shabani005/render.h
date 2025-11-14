@@ -43,6 +43,8 @@ void rd_draw_triangle(rd_canvas *c, mt_Vec2 v1, mt_Vec2 v2, mt_Vec2 v3, rd_color
 float rd_solve_y(mt_Vec2 a, mt_Vec2 b, float x);
 int rd_ceil(float x);
 int rd_floor(float x);
+void rd_draw_line_vertical(rd_canvas *c, size_t start, size_t end, size_t x, size_t w, rd_color col);
+void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, size_t w, rd_color col);
 
 #ifdef RD_IMPLEMENTATION
 static inline uint32_t rd_color_to_uint32(rd_color col){
@@ -132,6 +134,24 @@ void rd_draw_triangle(rd_canvas *c, mt_Vec2 v1, mt_Vec2 v2, mt_Vec2 v3, rd_color
       rd_draw_pixel(c, x, y, col);
     }
   }
+}
+
+void rd_draw_line_vertical(rd_canvas *c, size_t start, size_t end, size_t x, size_t w, rd_color col){
+  for (size_t y=start; y<end; ++y){
+    for (size_t j=0; j<w; ++j){
+      // printf("%zu %zu", x, y);
+      rd_draw_pixel(c, x+j, y, col);
+      }
+    }
+}
+
+void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, size_t w, rd_color col){
+  for (size_t x=start; x<end; ++x){
+    for (size_t j=0; j<w; ++j){
+      // printf("%zu %zu", x, y);
+      rd_draw_pixel(c, x, y+j, col);
+      }
+    }
 }
 #endif // RD_IMPLEMENTATION
 
