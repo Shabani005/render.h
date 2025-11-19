@@ -13,14 +13,20 @@ int main(void){
   float dt = (float)1/FPS; 
   Vec2 rec1 = {.x=50, .y=50};
   Vec2 rec2 = {.x=0, .y=10};
-   
+
+  Vec2 t1 = {.x=20, .y=35};
+  Vec2 t2 = {.x=40, .y=90};
+  Vec2 t3 = {.x=60, .y=35};
+  
   while (true){
     usleep(1000 * 1000 * dt); 
     Vec2transformP(&rec1, 10*dt, 20*dt);
     rd_fill_background(&canva, rd_white);
     rd_draw_rect(&canva, 40, 20, rec2.x, rec2.y, rd_blue);
     rd_draw_rect(&canva, 30, 20, rec1.x, rec1.y, rd_red);
-    rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
+    // rd_draw_rect(&canva, 10, 20, 40, 60, rd_green);
+    rd_draw_triangle(&canva, t1, t2, t3, rd_green);
+    rd_draw_circle(&canva, 120, 50, 20, rd_red);
     rd_canvas_to_terminal(&canva);
 
     uint8_t key = rd_poll_key_terminal();

@@ -30,6 +30,14 @@ typedef struct {
 } mt_Vec2;
 #endif
 
+typedef struct {
+  float x, y, z;
+} mt_Vec3;
+
+typedef struct {
+  float m[4][4];
+} mt_Mat4;
+ 
 static rd_color rd_grey = {.r=0x18, .g=0x18, .b=0x18, .a=0xFF};
 static rd_color rd_red = {.r=0xFF, .g=0x00, .b=0x00, .a=0xFF};
 static rd_color rd_white = {.r=0xFF, .g=0xFF, .b=0xFF, .a=0xFF};
@@ -156,6 +164,41 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
       }
     }
 }
+
+mt_Vec3 mt_mat4_mul_vec3(mt_Mat4 m, mt_Vec3 v) {
+    mt_Vec3 r;
+    float w = m.m[3][0]*v.x + m.m[3][1]*v.y + m.m[3][2]*v.z + m.m[3][3];
+    r.x = (m.m[0][0]*v.x + m.m[0][1]*v.y + m.m[0][2]*v.z + m.m[0][3]) / w;
+    r.y = (m.m[1][0]*v.x + m.m[1][1]*v.y + m.m[1][2]*v.z + m.m[1][3]) / w;
+    r.z = (m.m[2][0]*v.x + m.m[2][1]*v.y + m.m[2][2]*v.z + m.m[2][3]) / w;
+    return r;
+}
+
+float powf(float x, float power){
+  float result = 1.0f;
+  for (size_t i=0; i<power; ++i){
+    result*=x;
+  }
+  return result;
+}
+
+double tan(double x){
+  return x / (powf(x, 3)/3);
+}
+
+mt_Mat4 mt_perspective(float fov, float aspect, float near, float far) {
+    float f = 1.0f / tan(fov * 0.5f);
+    mt_Mat4 m = {0};
+    m.m[0][0] = f / aspect;
+    m.m[1][1] = f;
+    m.m[2][2] = (far + near) / (near - far);
+    m.m[2][3] = (2 * far * near) / (near - far);
+    m.m[3][2] = -1.0f;
+    return m;
+}
+
+// Raylib's Camera can give the Matrix
+
 #endif // RD_IMPLEMENTATION
 
 

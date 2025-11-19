@@ -27,6 +27,7 @@ float sqrtf(float num);
 float powf(float x, float power);
 double sin(double x);
 double cos(double x);
+double tan(double x);
 
 #ifdef MT_IMPLEMENTATION
 mt_Vec2 mt_Vec2add(mt_Vec2 a, mt_Vec2 b){
@@ -123,6 +124,10 @@ double cos(double x){
     sign*=-sign;
   }
   return result;
+}
+
+double tan(double x){
+  return x / (powf(x, 3)/3);
 }
 #endif // MT_IMPLEMENTATION
 
