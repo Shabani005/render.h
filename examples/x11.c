@@ -1,9 +1,6 @@
-#include <X11/X.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #define RD_X11
 #define RD_IMPLEMENTATION
