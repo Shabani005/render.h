@@ -47,6 +47,17 @@ typedef struct {
 #endif
 #endif
 
+#ifdef _WIN32
+#ifdef RD_NATIVE
+typedef struct {
+    HWND hwnd;
+    HDC hdc;
+    BITMAPINFO bmi;
+    bool running;
+} rd_window;
+#endif
+#endif
+
 #ifndef MT_IMPLEMENTATION
 typedef struct {
   float x;
@@ -359,12 +370,6 @@ void rd_close_window(rd_window *w) {
 
 #ifdef _WIN32
 
-typedef struct {
-    HWND hwnd;
-    HDC hdc;
-    BITMAPINFO bmi;
-    bool running;
-} rd_window;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_DESTROY) {
