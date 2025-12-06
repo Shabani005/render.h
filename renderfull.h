@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/select.h>
+#include <X11/X.h>
+#include <X11/Xutil.h>
+#include <X11/Xlib.h>
+#include <time.h>
 
 typedef struct {
   size_t   width;
@@ -19,6 +23,15 @@ typedef struct {
   uint8_t b;
   uint8_t a;
 } rd_color;
+
+typedef struct {
+  Display *dsp;
+  Window win;
+  GC gc;
+  XImage *img;
+  XVisualInfo vinfo;
+  int depth;
+} rd_window;
 
 #ifndef MT_IMPLEMENTATION
 typedef struct {
@@ -58,6 +71,18 @@ void rd_draw_ellipse(rd_canvas *c, int cx, int cy, float rx, float ry, rd_color 
 void rd_draw_circle(rd_canvas *c, int cx, int cy, float r, rd_color col);
 void rd_draw_line_vertical(rd_canvas *c, size_t start, size_t end, size_t x, size_t w, rd_color col);
 void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, size_t w, rd_color col);
+
+
+// WINDOWING STUFF
+
+rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title);
+bool rd_poll(rd_window *w);
+void rd_draw(rd_window *w, rd_canvas *canva);
+
+void rd_sleep_frame();
+void rd_close_window(rd_window *w);
+
+
 
 #ifdef RD_IMPLEMENTATION
 static inline uint32_t rd_color_to_uint32(rd_color col){
@@ -257,4 +282,61 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
       }
     }
 }
+
+rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title) {
+  rd_window w = {0};
+  w.dsp = XOpenDisplay(NULL);
+  int screen = DefaultScreen(w.dsp);
+  if (!XMatchVisualInfo(w.dsp, screen, 32, TrueColor, &w.vinfo)) {
+    XMatchVisualInfo(w.dsp, screen, 24, TrueColor, &w.vinfo);
+  }
+  w.depth = w.vinfo.depth;
+  Colormap cmap =
+      XCreateColormap(w.dsp, RootWindow(w.dsp, screen), w.vinfo.visual,
+                      AllocNone);
+  XSetWindowAttributes attrs;
+  attrs.colormap = cmap;
+  attrs.border_pixel = 0;
+  attrs.background_pixel = 0;
+  attrs.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+  w.win = XCreateWindow(w.dsp, RootWindow(w.dsp, screen), 0, 0, width, height,
+                        0, w.vinfo.depth, InputOutput, w.vinfo.visual,
+                        CWColormap | CWBorderPixel | CWBackPixel | CWEventMask,
+                        &attrs);
+  XStoreName(w.dsp, w.win, title);
+  XMapWindow(w.dsp, w.win);
+  w.gc = XCreateGC(w.dsp, w.win, 0, NULL);
+  w.img = XCreateImage(w.dsp, w.vinfo.visual, w.vinfo.depth, ZPixmap, 0,
+                       (char *)canva->pixels, width, height, 32, 0);
+  return w;
+}
+
+bool rd_poll(rd_window *w) {
+  while (XPending(w->dsp)) {
+    XEvent event;
+    XNextEvent(w->dsp, &event);
+    if (event.type == KeyPress || event.type == DestroyNotify) return false;
+  }
+  return true;
+}
+
+void rd_draw(rd_window *w, rd_canvas *canva) {
+  XPutImage(w->dsp, w->win, w->gc, w->img, 0, 0, 0, 0, canva->width,
+            canva->height);
+  XFlush(w->dsp);
+}
+
+void rd_sleep_frame() {
+  struct timespec ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 1000000000 / FPS;
+  nanosleep(&ts, NULL);
+}
+
+void rd_close_window(rd_window *w) {
+  XDestroyImage(w->img);
+  XDestroyWindow(w->dsp, w->win);
+  XCloseDisplay(w->dsp);
+}
+
 #endif // RD_IMPLEMENTATION
