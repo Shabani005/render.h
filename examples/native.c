@@ -15,7 +15,7 @@
 int main(void) {
   rd_canvas canva = {0};
   rd_init_canvas(&canva, WIDTH, HEIGHT);
-  rd_window win = rd_init_window(&canva, WIDTH, HEIGHT, "X11 example");
+  rd_window win = rd_init_window(&canva, WIDTH, HEIGHT, "native example");
 
   mt_Vec2 rec1 = {.x = 200, .y = 200};
   mt_Vec2 t1 = {.x = 200, .y = 50};
