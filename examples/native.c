@@ -2,19 +2,16 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#define RD_X11
 #define RD_NATIVE
 #define RD_IMPLEMENTATION
 #define MT_IMPLEMENTATION
 #define NB_IMPLEMENTATION
+
 #include "../mathx.h"
 #include "../renderfull.h"
-#include "nb.h"
 
 #define WIDTH 800
 #define HEIGHT 600
-// #define FPS 200
-
 
 int main(void) {
   rd_canvas canva = {0};
@@ -30,7 +27,6 @@ int main(void) {
   bool running = true;
 
   while (running) {
-    
     running = rd_poll(&win);
     float t = rd_time();
     float dt = (float)(t - last_time);

@@ -11,12 +11,6 @@
 #include <unistd.h>
 #endif
 
-#ifdef RD_X11
-#include <X11/X.h>
-#include <X11/Xutil.h>
-#include <X11/Xlib.h>
-#endif
-
 #ifdef _WIN32
 #include <Windows.h>
 #endif 
@@ -36,7 +30,12 @@ typedef struct {
   uint8_t a;
 } rd_color;
 
-#ifdef RD_X11
+#ifndef _WIN32
+#ifdef RD_NATIVE
+#include <X11/X.h>
+#include <X11/Xutil.h>
+#include <X11/Xlib.h>
+
 typedef struct {
   Display *dsp;
   Window win;
@@ -46,7 +45,7 @@ typedef struct {
   int depth;
 } rd_window;
 #endif
-
+#endif
 
 #ifndef MT_IMPLEMENTATION
 typedef struct {
@@ -55,13 +54,10 @@ typedef struct {
 } mt_Vec2;
 #endif
 
-
-
 #ifndef RD_ALLOC
 #include <stdlib.h>
 #define RD_ALLOC(size) malloc(size)
 #endif
-
 
 static rd_color rd_grey = {.r=0x18, .g=0x18, .b=0x18, .a=0xFF};
 static rd_color rd_red = {.r=0xFF, .g=0x00, .b=0x00, .a=0xFF};
@@ -301,7 +297,8 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
     }
 }
 
-#ifdef RD_X11
+#ifndef _WIN32
+#ifdef RD_NATIVE
 rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title) {
   rd_window w = {0};
   w.dsp = XOpenDisplay(NULL);
@@ -357,7 +354,8 @@ void rd_close_window(rd_window *w) {
   XDestroyWindow(w->dsp, w->win);
   XCloseDisplay(w->dsp);
 }
-#endif // RD_X11
+#endif // RD_NATIVE
+#endif
 
 #ifdef _WIN32
 
