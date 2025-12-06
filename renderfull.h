@@ -151,6 +151,7 @@ void rd_canvas_to_ppm(rd_canvas *c, const char *filename){
   fclose(f);
 }
 
+#ifndef _WIN32
 uint8_t rd_poll_key_terminal() {
     struct termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt);
@@ -172,6 +173,7 @@ uint8_t rd_poll_key_terminal() {
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     return ch;  
 }
+#endif
 
 void rd_canvas_to_terminal(rd_canvas *c){
   printf("\n\033[H\033[J");
