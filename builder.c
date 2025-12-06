@@ -17,6 +17,12 @@ int main(int argc, char** argv){
   nb_append_da(&cmd, "-lraylib");
   nb_cmd(&cmd);
 
+  nb_append_da(&cmd, "cc");
+  nb_append_da(&cmd, "-o", "x11");
+  nb_append_da(&cmd, "examples/x11.c");
+  nb_append_da(&cmd, "-lX11");
+  nb_cmd(&cmd);
+
   nb_append(&cmd, "clang ");
   nb_append(&cmd, "  -O3 ");
   nb_append(&cmd, "  --target=wasm32 ");

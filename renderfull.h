@@ -6,10 +6,15 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/select.h>
+#include <time.h>
+
+#ifdef RD_X11
 #include <X11/X.h>
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
-#include <time.h>
+#endif
+
+#define FPS 60
 
 typedef struct {
   size_t   width;
@@ -24,6 +29,7 @@ typedef struct {
   uint8_t a;
 } rd_color;
 
+#ifdef RD_X11
 typedef struct {
   Display *dsp;
   Window win;
@@ -32,6 +38,7 @@ typedef struct {
   XVisualInfo vinfo;
   int depth;
 } rd_window;
+#endif
 
 #ifndef MT_IMPLEMENTATION
 typedef struct {
@@ -75,13 +82,13 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
 
 // WINDOWING STUFF
 
+#ifdef RD_X11
 rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title);
 bool rd_poll(rd_window *w);
 void rd_draw(rd_window *w, rd_canvas *canva);
-
 void rd_sleep_frame();
 void rd_close_window(rd_window *w);
-
+#endif
 
 
 #ifdef RD_IMPLEMENTATION
@@ -283,6 +290,7 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
     }
 }
 
+#ifdef RD_X11
 rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title) {
   rd_window w = {0};
   w.dsp = XOpenDisplay(NULL);
@@ -338,5 +346,6 @@ void rd_close_window(rd_window *w) {
   XDestroyWindow(w->dsp, w->win);
   XCloseDisplay(w->dsp);
 }
+#endif // RD_X11
 
 #endif // RD_IMPLEMENTATION

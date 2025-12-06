@@ -5,6 +5,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#define RD_X11
 #define RD_IMPLEMENTATION
 #define MT_IMPLEMENTATION
 #define NB_IMPLEMENTATION
@@ -14,7 +15,7 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define FPS 200
+// #define FPS 200
 
 
 int main(void) {
