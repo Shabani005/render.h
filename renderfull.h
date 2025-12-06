@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <time.h>
+
+#ifndef _WIN32
 #include <termios.h>
 #include <sys/select.h>
-#include <time.h>
+#endif
 
 #ifdef RD_X11
 #include <X11/X.h>
