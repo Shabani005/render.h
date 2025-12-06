@@ -18,8 +18,8 @@ int main(int argc, char** argv){
   nb_cmd(&cmd);
 
   nb_append_da(&cmd, "cc");
-  nb_append_da(&cmd, "-o", "x11");
-  nb_append_da(&cmd, "examples/x11.c");
+  nb_append_da(&cmd, "-o", "native");
+  nb_append_da(&cmd, "examples/native.c");
   nb_append_da(&cmd, "-lX11");
   nb_cmd(&cmd);
 
