@@ -17,6 +17,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif 
+
 #define FPS 60
 
 typedef struct {
@@ -42,6 +46,7 @@ typedef struct {
   int depth;
 } rd_window;
 #endif
+
 
 #ifndef MT_IMPLEMENTATION
 typedef struct {
@@ -85,12 +90,13 @@ void rd_draw_line_horizontal(rd_canvas *c, size_t start, size_t end, size_t y, s
 
 // WINDOWING STUFF
 
-#ifdef RD_X11
+#ifdef RD_NATIVE
 rd_window rd_init_window(rd_canvas *canva, int width, int height, const char *title);
 bool rd_poll(rd_window *w);
 void rd_draw(rd_window *w, rd_canvas *canva);
 void rd_sleep_frame();
 void rd_close_window(rd_window *w);
+double rd_time(void);
 #endif
 
 
@@ -353,4 +359,129 @@ void rd_close_window(rd_window *w) {
 }
 #endif // RD_X11
 
+#ifdef _WIN32
+
+typedef struct {
+    HWND hwnd;
+    HDC hdc;
+    BITMAPINFO bmi;
+    bool running;
+} rd_window;
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_DESTROY) {
+        PostQuitMessage(0);
+        return 0;
+    }
+    return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+rd_window rd_init_window(rd_canvas* canva, int width, int height, const char* title) {
+    rd_window w = { 0 };
+
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    const wchar_t CLASS_NAME[] = L"Win32CanvasClass";
+
+    WNDCLASSW wc = { 0 };
+    wc.lpfnWndProc = WndProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+
+    RegisterClassW(&wc);
+
+    // Convert const char* title → wchar_t
+    wchar_t wtitle[256];
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, wtitle, 256);
+
+    w.hwnd = CreateWindowExW(
+        0,
+        CLASS_NAME,
+        wtitle, 
+        WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        width,
+        height,
+        NULL,
+        NULL,
+        hInstance,
+        NULL
+    );
+
+    w.hdc = GetDC(w.hwnd);
+
+    ZeroMemory(&w.bmi, sizeof(BITMAPINFO));
+    w.bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    w.bmi.bmiHeader.biWidth = (LONG)canva->width;
+    w.bmi.bmiHeader.biHeight = -(LONG)canva->height;
+    w.bmi.bmiHeader.biPlanes = 1;
+    w.bmi.bmiHeader.biBitCount = 32;
+    w.bmi.bmiHeader.biCompression = BI_RGB;
+
+    ShowWindow(w.hwnd, SW_SHOW);
+    UpdateWindow(w.hwnd);
+    w.running = true;
+    return w;
+}
+
+bool rd_poll(rd_window* w) {
+    MSG msg;
+    while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_QUIT) {
+            w->running = false;
+            return false;
+        }
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    return w->running;
+}
+
+void rd_draw(rd_window* w, rd_canvas* canva) {
+    StretchDIBits(
+        w->hdc,
+        0, 0, canva->width, canva->height,
+        0, 0, canva->width, canva->height,
+        canva->pixels,
+        &w->bmi,
+        DIB_RGB_COLORS,
+        SRCCOPY
+    );
+}
+
+void rd_sleep_frame() {
+    Sleep(1000 / FPS);
+}
+
+void rd_close_window(rd_window* w) {
+    ReleaseDC(w->hwnd, w->hdc);
+    DestroyWindow(w->hwnd);
+}
+#endif // _WIN32
+
+#ifdef _WIN32
+#include <Windows.h>
+
+double rd_time(void) {
+    static LARGE_INTEGER freq;
+    static BOOL freqSet = FALSE;
+    if (!freqSet) {
+        QueryPerformanceFrequency(&freq);
+        freqSet = TRUE;
+    }
+    LARGE_INTEGER counter;
+    QueryPerformanceCounter(&counter);
+    return (double)counter.QuadPart / (double)freq.QuadPart;
+}
+#else
+#include <time.h>
+double rd_time(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
+}
+#endif
 #endif // RD_IMPLEMENTATION
+

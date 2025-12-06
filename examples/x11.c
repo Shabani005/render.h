@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #define RD_X11
+#define RD_NATIVE
 #define RD_IMPLEMENTATION
 #define MT_IMPLEMENTATION
 #define NB_IMPLEMENTATION
@@ -25,13 +26,13 @@ int main(void) {
   mt_Vec2 t2 = {.x = 400, .y = 200};
   mt_Vec2 t3 = {.x = 600, .y = 50};
 
-  float last_time = nb_time();
+  float last_time = rd_time();
   bool running = true;
 
   while (running) {
     
     running = rd_poll(&win);
-    float t = nb_time();
+    float t = rd_time();
     float dt = (float)(t - last_time);
     last_time = t;
 
