@@ -82,6 +82,9 @@ void rd_init_canvas(rd_canvas *c, size_t w, size_t h);
 void rd_fill_background(rd_canvas *c, rd_color col);
 void rd_draw_rect(rd_canvas *c, size_t w, size_t h, size_t x, size_t y, rd_color col);
 void rd_canvas_to_ppm(rd_canvas *c, const char *filename);
+static void ppm_skip_comments(FILE *f);
+uint32_t *ppm_to_pixels(const char *filename, size_t *w, size_t *h);
+bool ppm_to_canvas(rd_canvas *c, const char *filename);
 uint8_t rd_poll_key_terminal();
 void rd_canvas_to_terminal(rd_canvas *c);
 void rd_draw_pixel(rd_canvas *c, size_t x, size_t y, rd_color color);
@@ -162,6 +165,82 @@ void rd_canvas_to_ppm(rd_canvas *c, const char *filename){
     fwrite(&b, 1, 1, f);
   }
   fclose(f);
+}
+
+static void ppm_skip_comments(FILE *f) {
+  int ch;
+  while ((ch = fgetc(f)) == '#') {
+    while (ch != '\n' && ch != EOF) {
+      ch = fgetc(f);
+    }
+  }
+  if (ch != EOF) {
+    ungetc(ch, f);
+  }
+}
+
+uint32_t *ppm_to_pixels(const char *filename, size_t *w, size_t *h) {
+  FILE *f = fopen(filename, "rb");
+  if (!f) return NULL;
+
+  char magic[3] = {0};
+  if (fscanf(f, "%2s", magic) != 1 || magic[0] != 'P' || magic[1] != '6') {
+    fclose(f);
+    return NULL;
+  }
+
+  ppm_skip_comments(f);
+  fscanf(f, "%zu", w);
+  ppm_skip_comments(f);
+  fscanf(f, "%zu", h);
+  ppm_skip_comments(f);
+
+  int maxval;
+  fscanf(f, "%d", &maxval);
+  fgetc(f); 
+
+  if (maxval != 255) {
+    fclose(f);
+    return NULL;
+  }
+
+  size_t count = (*w) * (*h);
+  uint32_t *pixels = RD_ALLOC(sizeof(uint32_t) * count);
+  if (!pixels) {
+    fclose(f);
+    return NULL;
+  }
+
+  for (size_t i = 0; i < count; ++i) {
+    uint8_t rgb[3];
+    if (fread(rgb, 1, 3, f) != 3) {
+      free(pixels);
+      fclose(f);
+      return NULL;
+    }
+
+    rd_color c = {
+      .r = rgb[0],
+      .g = rgb[1],
+      .b = rgb[2],
+      .a = 0xFF
+    };
+    pixels[i] = rd_color_to_uint32(c);
+  }
+
+  fclose(f);
+  return pixels;
+}
+
+bool ppm_to_canvas(rd_canvas *c, const char *filename) {
+  size_t w, h;
+  uint32_t *pix = ppm_to_pixels(filename, &w, &h);
+  if (!pix) return false;
+
+  c->width  = w;
+  c->height = h;
+  c->pixels = pix;
+  return true;
 }
 
 #ifndef _WIN32
