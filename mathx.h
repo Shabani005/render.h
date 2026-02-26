@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _WIN32
 typedef unsigned long size_t;
 #endif
